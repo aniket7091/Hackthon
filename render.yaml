@@ -1,0 +1,22 @@
+services:
+  - type: web
+    name: designguard-backend
+    env: node
+    rootDir: backend
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: AI_API_URL
+        value: https://api.groq.com/openai/v1/chat/completions
+      - key: AI_MODEL
+        value: moonshotai/kimi-k2-instruct-0905
+      - key: AI_MAX_TOKENS
+        value: 16384
+      - key: USE_MOCK_AI
+        value: false
+      - key: AI_API_KEY
+        sync: false
