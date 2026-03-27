@@ -4,7 +4,6 @@ import 'package:formwork/screens/splash/splash_screen.dart';
 import 'core/constants/app_theme.dart';
 import 'providers/auth_provider.dart';
 import 'providers/design_provider.dart';
-import 'providers/svg_provider.dart';
 
 void main() {
   runApp(const MyApp());
@@ -19,7 +18,6 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider(create: (_) => AuthProvider()),
         ChangeNotifierProvider(create: (_) => DesignProvider()),
-        ChangeNotifierProvider(create: (_) => SvgProvider()),
       ],
       child: MaterialApp(
         title: 'FormWork AI',
