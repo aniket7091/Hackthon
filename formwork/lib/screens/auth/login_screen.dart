@@ -42,7 +42,7 @@ class _LoginScreenState extends State<LoginScreen>
     _neuralController = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 6),
-    )..repeat();
+    );
 
     _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
@@ -59,7 +59,11 @@ class _LoginScreenState extends State<LoginScreen>
           ),
         );
 
-    _animationController.forward();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _neuralController.repeat();
+      _animationController.forward();
+    });
   }
 
   @override

@@ -58,6 +58,11 @@ class TopNavBar extends StatelessWidget {
               active: selectedIndex == 2,
               onTap: onTabSelected != null ? () => onTabSelected!(2) : null,
             ),
+            NavItem(
+              label: 'SVG Workshop',
+              active: selectedIndex == 3,
+              onTap: onTabSelected != null ? () => onTabSelected!(3) : null,
+            ),
           ],
           const Spacer(),
           // Validate Button

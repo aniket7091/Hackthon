@@ -9,6 +9,7 @@ import '../../widgets/Dashboard/top_nav_bar.dart';
 import '../../widgets/Dashboard/wide_layout.dart';
 import '../workspace/cad_workspace_screen.dart';
 import '../auth/login_screen.dart';
+import '../svg_workshop/svg_workshop_screen.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -54,7 +55,9 @@ class _DashboardScreenState extends State<DashboardScreen> {
               Expanded(
                 child: _selectedIndex == 1
                     ? const CadWorkspaceScreen()
-                    : Row(
+                    : _selectedIndex == 3
+                        ? const SvgWorkshopScreen()
+                        : Row(
                         children: [
                           LeftSidebar(compact: !isMedium),
                           Expanded(

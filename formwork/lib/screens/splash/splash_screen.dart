@@ -56,22 +56,22 @@ class _SplashScreenState extends State<SplashScreen>
     _pulseCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1200),
-    )..repeat(reverse: true);
+    );
 
     _bounceCtrl = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 800),
-    )..repeat(reverse: true);
+    );
 
     _gridCtrl = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 8),
-    )..repeat();
+    );
 
     _neuralCtrl = AnimationController(
       vsync: this,
       duration: const Duration(seconds: 6),
-    )..repeat();
+    );
 
 
     // Staggered fade/slide animations
@@ -123,11 +123,18 @@ class _SplashScreenState extends State<SplashScreen>
       CurvedAnimation(parent: _bounceCtrl, curve: Curves.easeInOut),
     );
 
-
-    // Start animations
-    _masterCtrl.forward();
-    Future.delayed(const Duration(milliseconds: 600), () {
-      if (mounted) _progressCtrl.forward();
+    // Defer all animation starts to after the first frame to avoid
+    // "EngineFlutterView disposed" assertion on hot restart (web).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _pulseCtrl.repeat(reverse: true);
+      _bounceCtrl.repeat(reverse: true);
+      _gridCtrl.repeat();
+      _neuralCtrl.repeat();
+      _masterCtrl.forward();
+      Future.delayed(const Duration(milliseconds: 600), () {
+        if (mounted) _progressCtrl.forward();
+      });
     });
   }
 

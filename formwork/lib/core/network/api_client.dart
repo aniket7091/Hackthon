@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:http/http.dart' as http;
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../constants/api_constants.dart';
 
 class ApiException implements Exception {
@@ -17,13 +17,15 @@ class ApiClient {
   factory ApiClient() => _instance;
   ApiClient._internal();
 
-  final _storage = const FlutterSecureStorage();
   final _client = http.Client();
 
-  Future<String?> _getToken() => _storage.read(key: 'jwt_token');
+  Future<String?> _getToken() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('jwt_token');
+  }
 
   Future<Map<String, String>> _headers({bool withAuth = true}) async {
-    final headers = {'Content-Type': 'application/json'};
+    final headers = <String, String>{'Content-Type': 'application/json'};
     if (withAuth) {
       final token = await _getToken();
       if (token != null) headers['Authorization'] = 'Bearer $token';
@@ -38,7 +40,8 @@ class ApiClient {
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return body as Map<String, dynamic>;
     }
-    final msg = (body as Map<String, dynamic>)['message']?.toString() ?? 'Request failed';
+    final msg = (body as Map<String, dynamic>)['message']?.toString() ??
+        'Request failed (${response.statusCode})';
     throw ApiException(msg, statusCode: response.statusCode);
   }
 
@@ -47,7 +50,11 @@ class ApiClient {
     return _parse(response);
   }
 
-  Future<Map<String, dynamic>> post(String path, Map<String, dynamic> body, {bool withAuth = true}) async {
+  Future<Map<String, dynamic>> post(
+    String path,
+    Map<String, dynamic> body, {
+    bool withAuth = true,
+  }) async {
     final response = await _client.post(
       _uri(path),
       headers: await _headers(withAuth: withAuth),

@@ -1,11 +1,12 @@
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import '../core/network/api_client.dart';
 import '../core/constants/api_constants.dart';
 import '../models/auth_model.dart';
 
 class AuthService {
   final _client = ApiClient();
-  final _storage = const FlutterSecureStorage();
+
+  Future<SharedPreferences> get _prefs => SharedPreferences.getInstance();
 
   Future<AuthResponse> signup({
     required String name,
@@ -18,10 +19,11 @@ class AuthService {
       withAuth: false,
     );
     final response = AuthResponse.fromJson(json);
-    await _storage.write(key: 'jwt_token', value: response.token);
-    await _storage.write(key: 'user_name', value: response.user.name);
-    await _storage.write(key: 'user_email', value: response.user.email);
-    await _storage.write(key: 'user_id', value: response.user.id);
+    final prefs = await _prefs;
+    await prefs.setString('jwt_token', response.token);
+    await prefs.setString('user_name', response.user.name);
+    await prefs.setString('user_email', response.user.email);
+    await prefs.setString('user_id', response.user.id);
     return response;
   }
 
@@ -35,28 +37,40 @@ class AuthService {
       withAuth: false,
     );
     final response = AuthResponse.fromJson(json);
-    await _storage.write(key: 'jwt_token', value: response.token);
-    await _storage.write(key: 'user_name', value: response.user.name);
-    await _storage.write(key: 'user_email', value: response.user.email);
-    await _storage.write(key: 'user_id', value: response.user.id);
+    final prefs = await _prefs;
+    await prefs.setString('jwt_token', response.token);
+    await prefs.setString('user_name', response.user.name);
+    await prefs.setString('user_email', response.user.email);
+    await prefs.setString('user_id', response.user.id);
     return response;
   }
 
   Future<AuthUser?> getStoredUser() async {
-    final token = await _storage.read(key: 'jwt_token');
-    if (token == null) return null;
-    final id = await _storage.read(key: 'user_id') ?? '';
-    final name = await _storage.read(key: 'user_name') ?? '';
-    final email = await _storage.read(key: 'user_email') ?? '';
+    final prefs = await _prefs;
+    final token = prefs.getString('jwt_token');
+    if (token == null || token.isEmpty) return null;
+    final id = prefs.getString('user_id') ?? '';
+    final name = prefs.getString('user_name') ?? '';
+    final email = prefs.getString('user_email') ?? '';
     return AuthUser(id: id, name: name, email: email);
   }
 
   Future<void> logout() async {
-    await _storage.deleteAll();
+    final prefs = await _prefs;
+    await prefs.remove('jwt_token');
+    await prefs.remove('user_name');
+    await prefs.remove('user_email');
+    await prefs.remove('user_id');
   }
 
   Future<bool> isLoggedIn() async {
-    final token = await _storage.read(key: 'jwt_token');
+    final prefs = await _prefs;
+    final token = prefs.getString('jwt_token');
     return token != null && token.isNotEmpty;
+  }
+
+  Future<String?> getToken() async {
+    final prefs = await _prefs;
+    return prefs.getString('jwt_token');
   }
 }
