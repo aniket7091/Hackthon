@@ -4,7 +4,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:formwork/core/constants/string.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
+import '../../providers/auth_provider.dart';
 import '../../widgets/components/custom_snakeBar.dart';
 import '../Dashboard/dashboard.dart';
 import 'SignUp_screen.dart';
@@ -69,25 +71,42 @@ class _LoginScreenState extends State<LoginScreen>
     super.dispose();
   }
 
-  void _handleLogin() {
-    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+  Future<void> _handleLogin() async {
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    if (email.isEmpty || password.isEmpty) {
+      AppOverlaySnackBar.show(
+        context: context,
+        message: 'Please enter your email and password.',
+        backgroundColor: Colors.orange,
+        icon: Icons.warning_outlined,
+      );
       return;
     }
     setState(() => _isLoading = true);
-    Future.delayed(const Duration(seconds: 2), () {
-      if (mounted) {
-        setState(() => _isLoading = false);
-        Navigator.push(context,MaterialPageRoute(builder: (context) => DashboardScreen(),));
-
-        ///custom snack bar
-        AppOverlaySnackBar.show(
-          context: context,
-          message: "Session Initialized",
-          backgroundColor: Colors.green,
-          icon: Icons.verified_outlined,
-        );
-      }
-    });
+    final authProvider = context.read<AuthProvider>();
+    final success = await authProvider.login(email, password);
+    if (!mounted) return;
+    setState(() => _isLoading = false);
+    if (success) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => const DashboardScreen()),
+      );
+      AppOverlaySnackBar.show(
+        context: context,
+        message: 'Session Initialized — Welcome back!',
+        backgroundColor: Colors.green,
+        icon: Icons.verified_outlined,
+      );
+    } else {
+      AppOverlaySnackBar.show(
+        context: context,
+        message: authProvider.errorMessage ?? 'Login failed.',
+        backgroundColor: Colors.red,
+        icon: Icons.error_outline,
+      );
+    }
   }
 
   @override

@@ -1,15 +1,24 @@
 /**
  * DesignGuard AI - Main Server Entry Point
- * Sets up Express app, middleware, and routes
+ * Sets up Express app, middleware, routes, and MongoDB connection
  */
 
 require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
+const mongoose = require('mongoose');
 const designRoutes = require('./routes/designRoutes');
+const authRoutes = require('./routes/authRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const MONGO_URI = process.env.MONGO_URI || 'mongodb+srv://aniketkumar7091315698_db_user:Aniket7091@cluster0.heiseak.mongodb.net/formwork_ai?appName=Cluster0';
+
+// ─── MongoDB Connection ────────────────────────────────────────────────────────
+mongoose
+  .connect(MONGO_URI)
+  .then(() => console.log('✅ MongoDB Atlas connected'))
+  .catch((err) => console.error('❌ MongoDB connection error:', err.message));
 
 // ─── Middleware ────────────────────────────────────────────────────────────────
 app.use(cors());
@@ -26,10 +35,16 @@ if (process.env.NODE_ENV === 'development') {
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 app.use('/api/design', designRoutes);
+app.use('/auth', authRoutes);
 
 // Health check endpoint
 app.get('/health', (_req, res) => {
-  res.json({ status: 'OK', service: 'DesignGuard AI', timestamp: new Date().toISOString() });
+  res.json({
+    status: 'OK',
+    service: 'DesignGuard AI',
+    db: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+    timestamp: new Date().toISOString(),
+  });
 });
 
 // 404 handler
@@ -51,6 +66,7 @@ app.use((err, _req, res, _next) => {
 app.listen(PORT, () => {
   console.log(`\n🛡️  DesignGuard AI Backend running on http://localhost:${PORT}`);
   console.log(`📋 Health check: http://localhost:${PORT}/health`);
+  console.log(`🔐 Auth: /auth/signup, /auth/login`);
   console.log(`🤖 AI Mode: ${process.env.USE_MOCK_AI === 'true' ? 'Mock' : 'Live'}\n`);
 });
 

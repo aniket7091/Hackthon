@@ -2,8 +2,10 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:formwork/core/constants/string.dart';
 import 'package:formwork/screens/auth/login_screen.dart';
-
+import 'package:provider/provider.dart';
 import '../../core/constants/colors.dart';
+import '../../providers/auth_provider.dart';
+import '../Dashboard/dashboard.dart';
 
 // ===== NEURAL NETWORK PAINTER =====
 class NeuralNetworkPainter extends CustomPainter {
@@ -281,9 +283,33 @@ class _SignUpScreenState extends State<SignUpScreen>
             _InitializeButton(
               isLoading: _isLoading,
               onTap: () async {
+                final name = _fullNameController.text.trim();
+                final email = _emailController.text.trim();
+                final password = _passwordController.text;
+                if (name.isEmpty || email.isEmpty || password.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Please fill all fields.')),
+                  );
+                  return;
+                }
                 setState(() => _isLoading = true);
-                await Future.delayed(const Duration(seconds: 2));
-                if (mounted) setState(() => _isLoading = false);
+                final authProvider = context.read<AuthProvider>();
+                final success = await authProvider.signup(name, email, password);
+                if (!mounted) return;
+                setState(() => _isLoading = false);
+                if (success) {
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (_) => const DashboardScreen()),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(authProvider.errorMessage ?? 'Signup failed.'),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
               },
             ),
             const SizedBox(height: 14),
