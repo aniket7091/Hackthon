@@ -64,7 +64,11 @@ class RightCards extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => MainCardWorkSpaceScreen(),
+                          builder: (context) => const MainCardWorkSpaceScreen(
+                            filename: 'NEW_DESIGN',
+                            fileContent: '<svg xmlns="http://www.w3.org/2000/svg" width="400" height="400"></svg>',
+                            fileType: 'svg',
+                          ),
                         ),
                       );
                     },
